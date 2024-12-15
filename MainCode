@@ -1,0 +1,60 @@
+#include <ESP8266WiFi.h>
+#include <Servo.h>
+
+#define trigPin D6
+#define echoPin D5
+#define servoPin D2
+#define buzzerPin D1 
+#define flamePin D0 
+
+Servo myServo;
+
+long duration;
+int distance;
+
+void setup() {
+
+  Serial.begin(115200);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(flamePin, INPUT);
+
+  myServo.attach(servoPin);
+
+  myServo.write(90);
+  digitalWrite(buzzerPin, LOW);
+}
+
+void loop() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+
+  duration = pulseIn(echoPin, HIGH);
+
+  distance = (duration / 2) / 29.1;
+
+  int flameState = digitalRead(flamePin);
+
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.print(" cm, Flame Detected: ");
+  Serial.println(flameState == LOW ? "YES" : "NO");
+
+  if (flameState == LOW || distance < 30) {
+ 
+    myServo.write(0);
+
+    digitalWrite(buzzerPin, HIGH);  // Buzzer on
+  } else {
+    myServo.write(90);
+
+    digitalWrite(buzzerPin, LOW);
+  }
+
+  delay(500);
